@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Happy Birthday!</title>
+  <!-- Confetti library CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      background: radial-gradient(circle at center, #fbc2eb 30%, #a6c1ee 100%);
+      color: #2d2d2d;
+      font-family: "Shantell Sans", cursive;
+      text-align: center;
+      overflow-x: hidden;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Center screens vertically */
+    #main {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .screen {
+      display: none;
+      padding: 40px;
+      font-size: 1.7rem;
+      animation: fadeIn 1s ease-in-out;
+      max-width: 90%;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    button {
+      margin-top: 24px;
+      padding: 12px 26px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #ff6fb1, #c084fc);
+      color: white;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.08);
+    }
+
+    /* Photos gallery */
+    #photos {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+      gap: 15px;
+    }
+
+    #photos img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      animation: popIn 0.8s ease forwards;
+      cursor: pointer;
+    }
+
+    #photos img:hover {
+      transform: scale(1.12) rotate(2deg);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    /* Floating hearts animation */
+    .heart {
+      position: fixed;
+      bottom: -20px;
+      font-size: 22px;
+      color: #ff6fb1;
+      animation: floatUp 6s linear infinite;
+      opacity: 0.8;
+      pointer-events: none;
+    }
+
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 0.9; }
+      100% { transform: translateY(-100vh) scale(1.6); opacity: 0; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes popIn {
+      0% { transform: scale(0.6); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Letter */
+    #typed-letter {
+      font-size: 1.4rem;
+      line-height: 1.8;
+      max-width: 700px;
+      margin: auto;
+      text-align: left;
+      white-space: pre-wrap;
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.5);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    /* Lightbox overlay */
+    #lightbox {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+      animation: zoomIn 0.4s ease;
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.6); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="main">
+    <div id="loader" class="screen active">💝 Preparing Something Special... For someone very special...</div>
+    <div id="countdown" class="screen">⏳ Birthday Countdown<br><span id="timer"></span></div>
+    <div id="celebration" class="screen">🎉 The countdown is over... Let's celebrate! <br><button onclick="startConfetti()">Celebrate!</button></div>
+    <div id="happy-birthday" class="screen">🎂 Happy Birthday Chikuu 💕 <br><button onclick="showGallery()">See Our Moments</button></div>
+    <div id="gallery" class="screen">
+      ✨ Beautiful moments with Madam Jii 📸<br>
+      <div id="photos"></div>
+      <button onclick="showLetter()">One Last Thing</button>
+    </div>
+    <div id="letter" class="screen">
+      <div id="typed-letter"></div>
+      <button onclick="resetLetter()">Read Again</button>
+    </div>
+  </div>
+
+  <!-- Lightbox for full-size photo -->
+  <div id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" alt="Full Size">
+  </div>
+
+  <script>
+    const screens = ["loader", "countdown", "celebration", "happy-birthday", "gallery", "letter"];
+    let currentScreen = 0;
+
+    function showScreen(idx) {
+      screens.forEach((id, i) => {
+        document.getElementById(id).classList.toggle("active", i === idx);
+      });
+      currentScreen = idx;
+    }
+
+    // Loader → Countdown
+    setTimeout(() => {
+      showScreen(1);
+      startCountdown();
+    }, 3000);
+
+    // Countdown logic
+    function startCountdown() {
+      let timer = document.getElementById("timer");
+      let end = Date.now() + 10000; // 10 seconds
+      let interval = setInterval(() => {
+        let diff = end - Date.now();
+        if (diff <= 0) {
+          clearInterval(interval);
+          showScreen(2);
+        } else {
+          let sec = Math.floor(diff / 1000);
+          timer.textContent = sec + " seconds left 💖";
+        }
+      }, 1000);
+    }
+
+    // Confetti
+    function startConfetti() {
+      confetti({ particleCount: 180, spread: 100, origin: { y: 0.7 } });
+      setTimeout(() => showScreen(3), 2000);
+    }
+
+    // Happy Birthday → Gallery
+    function showGallery() { showScreen(4); loadPhotos(); }
+
+    // Load photos
+    function loadPhotos() {
+      const photoList = ["1.jpg", "3.jpg", "7.jpg", "9.jpg"];
+      const photosDiv = document.getElementById("photos");
+      photosDiv.innerHTML = "";
+      photoList.forEach((photo, i) => {
+        let img = document.createElement("img");
+        img.src = photo; 
+        img.style.animationDelay = (i * 0.2) + "s";
+        img.onclick = () => openLightbox(photo); // full-size preview
+        photosDiv.appendChild(img);
+      });
+    }
+
+    // Lightbox functions
+    function openLightbox(src) {
+      document.getElementById("lightbox-img").src = src;
+      document.getElementById("lightbox").style.display = "flex";
+    }
+
+    function closeLightbox() {
+      document.getElementById("lightbox").style.display = "none";
+    }
+
+    // Gallery → Letter
+    function showLetter() { showScreen(5); typeLetter(); }
+
+    // Letter typing
+    const letterText = `My Dearest Cutiee Panda,
+
+On this very special day, I want you to know how incredibly grateful I am to have you in my life. Your birthday isn't just a celebration of another year - it's a celebration of all the joy, laughter, and beautiful memories you bring to this world.
+
+You light up every room, make people smile even on their darkest days, and spread kindness wherever you go. Your heart is pure gold, and your spirit is absolutely magical.
+
+Thank you for being my everything – my life partner, best friend, family, and my whole world. 🥹🎂✨
+
+I love You So Much My Bacchaaa 💕`;
+
+    function typeLetter() {
+      const el = document.getElementById("typed-letter");
+      el.innerHTML = "";
+      let i = 0;
+      let interval = setInterval(() => {
+        el.textContent = letterText.slice(0, i++);
+        if (i > letterText.length) {
+          clearInterval(interval);
+          confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        }
+      }, 30);
+    }
+
+    function resetLetter() { typeLetter(); }
+
+    // Floating hearts
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.innerHTML = "💖";
+      heart.style.left = Math.random() * 100 + "vw";
+      heart.style.fontSize = (20 + Math.random() * 20) + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+    setInterval(createHeart, 1000);
+
+    // Start loader
+    showScreen(0);
+  </script>
+</body>
+</html>
