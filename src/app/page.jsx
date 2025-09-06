@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Loader from "../components/Loader";
-import Countdown from "../components/Countdown";
-import Celebration from "../components/Celebration";
-import HappyBirthday from "../components/HappyBirthday";
-import PhotoGallery from "../components/PhotoGallery";
-import Letter from "../components/Letter";
+import Loader from "../components/Loader.jsx";
+import Countdown from "../components/Countdown.jsx";
+import Celebration from "../components/Celebration.jsx";
+import HappyBirthday from "../components/HappyBirthday.jsx";
+import PhotoGallery from "../components/PhotoGallery.jsx";
+import Letter from "../components/Letter.jsx";
 
 export default function BirthdayApp() {
   const [currentScreen, setCurrentScreen] = useState(0);
