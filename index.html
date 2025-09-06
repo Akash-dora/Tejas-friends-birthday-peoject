@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Happy Birthday!</title>
-  <!-- Confetti library CDN -->
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     body {
@@ -13,25 +13,18 @@
       text-align: center;
       overflow-x: hidden;
       user-select: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    /* Center screens vertically */
-    #main {
-      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
+      min-height: 100vh;
       flex-direction: column;
     }
 
     .screen {
       display: none;
-      padding: 40px;
+      padding: 20px;
       font-size: 1.7rem;
       animation: fadeIn 1s ease-in-out;
-      max-width: 90%;
     }
 
     .screen.active {
@@ -56,29 +49,58 @@
       transform: scale(1.08);
     }
 
-    /* Photos gallery */
+    /* Heart shape photo gallery */
     #photos {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 20px;
-      gap: 15px;
+      position: relative;
+      width: 500px;
+      height: 450px;
+      margin: 40px auto;
     }
 
     #photos img {
-      width: 200px;
-      height: 200px;
+      width: 120px;
+      height: 120px;
       object-fit: cover;
-      border-radius: 20px;
+      border-radius: 16px;
       box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-      animation: popIn 0.8s ease forwards;
+      position: absolute;
       cursor: pointer;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
     }
 
     #photos img:hover {
-      transform: scale(1.12) rotate(2deg);
+      transform: scale(1.15);
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+
+    /* Arrange photos in a heart shape */
+    #photos img:nth-child(1) { top: 40px; left: 180px; }
+    #photos img:nth-child(2) { top: 0px; left: 100px; }
+    #photos img:nth-child(3) { top: 0px; left: 260px; }
+    #photos img:nth-child(4) { top: 90px; left: 60px; }
+    #photos img:nth-child(5) { top: 90px; left: 320px; }
+    #photos img:nth-child(6) { top: 200px; left: 30px; }
+    #photos img:nth-child(7) { top: 200px; left: 350px; }
+    #photos img:nth-child(8) { top: 320px; left: 100px; }
+    #photos img:nth-child(9) { top: 320px; left: 260px; }
+
+    /* Fullscreen lightbox */
+    #lightbox {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #lightbox img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
     }
 
     /* Floating hearts animation */
@@ -89,7 +111,7 @@
       color: #ff6fb1;
       animation: floatUp 6s linear infinite;
       opacity: 0.8;
-      pointer-events: none;
+      z-index: -1;
     }
 
     @keyframes floatUp {
@@ -100,11 +122,6 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    @keyframes popIn {
-      0% { transform: scale(0.6); opacity: 0; }
-      100% { transform: scale(1); opacity: 1; }
     }
 
     /* Letter */
@@ -119,31 +136,6 @@
       border-radius: 16px;
       background: rgba(255,255,255,0.5);
       box-shadow: 0 6px 12px rgba(0,0,0,0.15);
-    }
-
-    /* Lightbox overlay */
-    #lightbox {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    #lightbox img {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-      animation: zoomIn 0.4s ease;
-    }
-
-    @keyframes zoomIn {
-      from { transform: scale(0.6); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
     }
   </style>
 </head>
@@ -164,9 +156,9 @@
     </div>
   </div>
 
-  <!-- Lightbox for full-size photo -->
+  <!-- Lightbox -->
   <div id="lightbox" onclick="closeLightbox()">
-    <img id="lightbox-img" src="" alt="Full Size">
+    <img src="" alt="Full view">
   </div>
 
   <script>
@@ -211,24 +203,24 @@
     // Happy Birthday → Gallery
     function showGallery() { showScreen(4); loadPhotos(); }
 
-    // Load photos
+    // Load photos in heart shape
     function loadPhotos() {
-      const photoList = ["1.jpg", "3.jpg", "7.jpg", "9.jpg"];
+      const photoList = ["1.jpg","2.jpg","3.jpg","4.jpg","5.jpg","6.jpg","7.jpg","8.jpg","9.jpg"];
       const photosDiv = document.getElementById("photos");
       photosDiv.innerHTML = "";
       photoList.forEach((photo, i) => {
         let img = document.createElement("img");
-        img.src = photo; 
-        img.style.animationDelay = (i * 0.2) + "s";
-        img.onclick = () => openLightbox(photo); // full-size preview
+        img.src = photo;
+        img.onclick = () => openLightbox(photo);
         photosDiv.appendChild(img);
       });
     }
 
     // Lightbox functions
     function openLightbox(src) {
-      document.getElementById("lightbox-img").src = src;
-      document.getElementById("lightbox").style.display = "flex";
+      const lightbox = document.getElementById("lightbox");
+      lightbox.style.display = "flex";
+      lightbox.querySelector("img").src = src;
     }
 
     function closeLightbox() {
