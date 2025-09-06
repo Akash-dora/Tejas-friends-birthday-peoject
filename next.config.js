@@ -1,9 +1,8 @@
-// next.config.js
-const isProd = process.env.NODE_ENV === 'production'
-
-/** @type {import('next').NextConfig} */
+// filepath: c:\Users\webil\Downloads\birthday-site-v2-main\next.config.js
+// ...existing code...
 const nextConfig = {
-  output: 'export',
+  // Remove this line:
+  // output: 'export',
   images: {
     unoptimized: true,
   },
